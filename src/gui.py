@@ -4,10 +4,10 @@ import getpass
 import socket
 import tkinter as tk
 from tkinter import ttk
+from typing import Optional
 
 from src.parser import parse_command
 from src.commands import execute
-
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 500
@@ -20,18 +20,28 @@ OUTPUT_FG = "#e8eaed"
 PROMPT_FG = "#8ab4f8"
 COMMAND_FG = "#fbbc04"
 ERROR_FG = "#f28b82"
+INFO_FG = "#9aa0a6"
 
 
 class ShellGUI:
     """Графический интерфейс эмулятора оболочки."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        vfs_path: Optional[str] = None,
+        script_path: Optional[str] = None
+    ) -> None:
         """Создать окно и виджеты эмулятора."""
+        self.vfs_path = vfs_path
+        self.script_path = script_path
         self.root = tk.Tk()
         self._setup_window()
         self._setup_widgets()
         self._bind_events()
         self._show_prompt()
+
+        if self.script_path:
+            self._run_startup_script()
 
     def _setup_window(self) -> None:
         """Настроить заголовок и размер окна."""
@@ -98,6 +108,9 @@ class ShellGUI:
         self.output.tag_configure(
             "error", foreground=ERROR_FG
         )
+        self.output.tag_configure(
+            "info", foreground=INFO_FG
+        )
 
     def _bind_events(self) -> None:
         """Привязать обработчики событий."""
@@ -125,6 +138,28 @@ class ShellGUI:
         user = getpass.getuser() or "user"
         host = socket.gethostname() or "localhost"
         self._append_text(f"{user}@{host}:~$ ", "prompt")
+
+    def _run_startup_script(self) -> None:
+        """Выполнить стартовый скрипт при запуске."""
+        from src.script_runner import run_script
+
+        self._append_text(
+            f"--- Запуск скрипта: {self.script_path} ---\n",
+            "info"
+        )
+        error = run_script(self.script_path, self._append_text)
+        if error:
+            self._append_text(
+                f"--- Скрипт остановлен: {error} ---\n",
+                "error"
+            )
+        else:
+            self._append_text(
+                "--- Скрипт завершен успешно ---\n",
+                "info"
+            )
+
+        self._show_prompt()
 
     def _on_enter(self, event: tk.Event) -> str:
         """Обработать нажатие клавиши Enter.
