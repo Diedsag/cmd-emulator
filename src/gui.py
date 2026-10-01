@@ -8,6 +8,7 @@ from typing import Optional
 
 from src.parser import parse_command
 from src.commands import execute
+from src.context import ShellContext
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 500
@@ -34,14 +35,35 @@ class ShellGUI:
         """Создать окно и виджеты эмулятора."""
         self.vfs_path = vfs_path
         self.script_path = script_path
+        self.context = ShellContext()
+
         self.root = tk.Tk()
         self._setup_window()
         self._setup_widgets()
         self._bind_events()
+        self._load_vfs()
+        self._show_motd()
         self._show_prompt()
 
         if self.script_path:
             self._run_startup_script()
+
+    def _load_vfs(self) -> None:
+        """Загрузить VFS из указанной директории."""
+        if not self.vfs_path:
+            return
+        try:
+            self.context.load_vfs(self.vfs_path)
+            print(f"[DEBUG] VFS загружена: {self.vfs_path}")
+        except ValueError as err:
+            print(f"[DEBUG] Ошибка VFS: {err}")
+            self._append_text(str(err) + "\n", "error")
+
+    def _show_motd(self) -> None:
+        """Вывести сообщение из файла motd."""
+        motd = self.context.vfs.get_motd()
+        if motd:
+            self._append_text(motd + "\n", "info")
 
     def _setup_window(self) -> None:
         """Настроить заголовок и размер окна."""
@@ -82,7 +104,6 @@ class ShellGUI:
         self.output.pack(
             fill=tk.BOTH, expand=True, padx=10, pady=10
         )
-
         self._configure_tags()
 
         self.entry = tk.Entry(
@@ -119,12 +140,7 @@ class ShellGUI:
     def _append_text(
         self, text: str, tag: str = ""
     ) -> None:
-        """Добавить строку в поле вывода.
-
-        Args:
-            text: Текст для вывода.
-            tag: Имя тега для раскраски.
-        """
+        """Добавить строку в поле вывода."""
         self.output.config(state=tk.NORMAL)
         if tag:
             self.output.insert(tk.END, text, tag)
@@ -135,41 +151,32 @@ class ShellGUI:
 
     def _show_prompt(self) -> None:
         """Вывести приглашение к вводу."""
-        user = getpass.getuser() or "user"
-        host = socket.gethostname() or "localhost"
-        self._append_text(f"{user}@{host}:~$ ", "prompt")
+        path = self.context.current_dir.get_path()
+        self._append_text(f"{path} $ ", "prompt")
 
     def _run_startup_script(self) -> None:
         """Выполнить стартовый скрипт при запуске."""
         from src.script_runner import run_script
 
         self._append_text(
-            f"--- Запуск скрипта: {self.script_path} ---\n",
+            f"--- Скрипт: {self.script_path} ---\n",
             "info"
         )
-        error = run_script(self.script_path, self._append_text)
+        error = run_script(
+            self.script_path, self._append_text, self.context
+        )
         if error:
             self._append_text(
-                f"--- Скрипт остановлен: {error} ---\n",
-                "error"
+                f"--- Ошибка: {error} ---\n", "error"
             )
         else:
             self._append_text(
-                "--- Скрипт завершен успешно ---\n",
-                "info"
+                "--- Скрипт завершён ---\n", "info"
             )
-
         self._show_prompt()
 
     def _on_enter(self, event: tk.Event) -> str:
-        """Обработать нажатие клавиши Enter.
-
-        Args:
-            event: Событие клавиатуры.
-
-        Returns:
-            Строка "break" для остановки всплытия.
-        """
+        """Обработать нажатие клавиши Enter."""
         line = self.entry.get()
         self.entry.delete(0, tk.END)
         self._append_text(line + "\n", "command")
@@ -190,26 +197,18 @@ class ShellGUI:
     def _run_command(
         self, cmd: str, args: list[str]
     ) -> None:
-        """Выполнить команду и вывести результат.
-
-        Args:
-            cmd: Имя команды.
-            args: Список аргументов.
-        """
+        """Выполнить команду и вывести результат."""
         try:
-            result = execute(cmd, args)
-            self._append_text(result + "\n")
+            result = execute(cmd, args, self.context)
+            if result:
+                self._append_text(result + "\n")
         except ValueError as err:
             self._append_text(str(err) + "\n", "error")
 
     def _execute_exit(self, args: list[str]) -> None:
-        """Закрыть приложение или вывести ошибку.
-
-        Args:
-            args: Аргументы команды exit.
-        """
+        """Закрыть приложение или вывести ошибку."""
         if args:
-            msg = "Ошибка: команда exit не принимает аргументов.\n"
+            msg = "Ошибка: exit не принимает аргументов.\n"
             self._append_text(msg, "error")
             self._show_prompt()
             return

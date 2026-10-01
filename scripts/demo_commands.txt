@@ -3,3 +3,5 @@ ls
 ls -la /home/user
 cd /var/log
 unknown_command
+ls a b cc
+cd x y z

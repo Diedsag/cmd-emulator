@@ -9,3 +9,6 @@ venv/
 dist/
 build/
 .pytest_cache/
+test_vfs_minimal/
+test_vfs_files/
+test_vfs_nested/
