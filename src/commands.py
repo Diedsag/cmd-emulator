@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Callable
 
 from src.context import ShellContext
+from src.vfs import VFSNode
 
 CommandHandler = Callable[[list[str], ShellContext], str]
 
@@ -71,6 +72,41 @@ def cmd_date(args: list[str], ctx: ShellContext) -> str:
     """Вывести текущую дату и время."""
     now = datetime.now()
     return now.strftime("%a %b %d %H:%M:%S %Y")
+
+
+@register("mkdir", "Создать директорию в памяти")
+def cmd_mkdir(args: list[str], ctx: ShellContext) -> str:
+    """Создать новую директорию в текущей папке VFS."""
+    if not args:
+        return "mkdir: отсутствует имя директории"
+    name = args[0]
+    if name in ctx.current_dir.children:
+        return f"mkdir: '{name}': уже существует"
+    new_node = VFSNode(name, True, ctx.current_dir)
+    ctx.current_dir.children[name] = new_node
+    return ""
+
+
+@register("rm", "Удалить файл или директорию из памяти")
+def cmd_rm(args: list[str], ctx: ShellContext) -> str:
+    """Удалить указанный узел из текущей директории VFS."""
+    if not args:
+        return "rm: отсутствует операнд"
+    name = args[0]
+    if name not in ctx.current_dir.children:
+        return f"rm: '{name}': не найдено"
+    del ctx.current_dir.children[name]
+    return ""
+
+
+@register("help", "Вывести список доступных команд")
+def cmd_help(args: list[str], ctx: ShellContext) -> str:
+    """Вывести отсортированный список команд с описаниями."""
+    lines: list[str] = []
+    for name in sorted(COMMANDS.keys()):
+        desc = DESCRIPTIONS.get(name, "")
+        lines.append(f"{name:<10} {desc}")
+    return "\n".join(lines)
 
 
 def execute(

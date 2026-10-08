@@ -1,23 +1,15 @@
-# Тестирование всех команд Этапа 4
+# Тестирование команд Этапа 5
+help
+mkdir docs
 ls
-cd level1
-ls
-cd level2
-ls
-cd level3
+cd docs
+mkdir secret
 ls
 cd ..
-cd ..
-cal
-date
-cd level1/level2/level3
 ls
-date
-cd ..
-cd ..
-cd ..
+rm docs
 ls
-cd nonexistent_dir
-cd motd
-ls level1
+mkdir level1
+mkdir level1
+rm missing_file
 unknown_command
