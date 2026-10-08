@@ -1,7 +1,23 @@
-# Тестовый скрипт для эмулятора
+# Тестирование всех команд Этапа 4
 ls
-ls -la /home/user
-cd /var/log
+cd level1
+ls
+cd level2
+ls
+cd level3
+ls
+cd ..
+cd ..
+cal
+date
+cd level1/level2/level3
+ls
+date
+cd ..
+cd ..
+cd ..
+ls
+cd nonexistent_dir
+cd motd
+ls level1
 unknown_command
-ls a b cc
-cd x y z

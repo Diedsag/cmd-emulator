@@ -1,5 +1,7 @@
 """Модуль команд эмулятора оболочки."""
 
+import calendar
+from datetime import datetime
 from typing import Callable
 
 from src.context import ShellContext
@@ -55,6 +57,20 @@ def cmd_cd(args: list[str], ctx: ShellContext) -> str:
         return f"cd: '{args[0]}': не каталог"
     ctx.current_dir = node
     return ""
+
+
+@register("cal", "Вывести календарь на текущий месяц")
+def cmd_cal(args: list[str], ctx: ShellContext) -> str:
+    """Вывести календарь на текущий месяц."""
+    now = datetime.now()
+    return calendar.month(now.year, now.month)
+
+
+@register("date", "Вывести текущую дату и время")
+def cmd_date(args: list[str], ctx: ShellContext) -> str:
+    """Вывести текущую дату и время."""
+    now = datetime.now()
+    return now.strftime("%a %b %d %H:%M:%S %Y")
 
 
 def execute(
