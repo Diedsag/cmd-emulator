@@ -1,4 +1,5 @@
-# Тестирование команд Этапа 4
+# Тестирование команд Этапа 5
+help
 ls
 ls -a
 ls -l
@@ -7,7 +8,17 @@ ls -lah
 cd home/use/data/../../buddy/././info
 ls -lah
 cd ../../../
-ls level1
+mkdir docs
+ls
+cd docs
+mkdir secret
+ls
+cd ..
+ls
+rm docs
+ls
+mkdir level1
+rm missing_file
 cal
 date
 cd nonexistent
