@@ -23,4 +23,13 @@ echo Deep file > test_vfs_nested\level1\level2\level3\deep.txt
 echo Level2 file > test_vfs_nested\level1\level2\file2.txt
 echo Level1 file > test_vfs_nested\level1\file1.txt
 
+echo hidden > test_vfs_nested\.hidden
+
+mkdir test_vfs_nested\home
+mkdir test_vfs_nested\home\use
+mkdir test_vfs_nested\home\use\data
+mkdir test_vfs_nested\home\buddy
+mkdir test_vfs_nested\home\buddy\info
+echo Note > test_vfs_nested\home\buddy\info\note.txt
+
 echo Тестовые данные созданы.

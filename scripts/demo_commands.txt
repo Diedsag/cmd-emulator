@@ -1,7 +1,15 @@
-# Тестовый скрипт для эмулятора
+# Тестирование команд Этапа 4
 ls
-ls -la /home/user
-cd /var/log
+ls -a
+ls -l
+ls -lh
+ls -lah
+cd home/use/data/../../buddy/././info
+ls -lah
+cd ../../../
+ls level1
+cal
+date
+cd nonexistent
+cd motd
 unknown_command
-ls a b cc
-cd x y z
